@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        canvas {
+            border: 1px solid #d3d3d3;
+            background-color: #df5757;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+
+<body onload="startGame()">
+    <title>Land To Sea</title>
+    <script>
+        var turtles = [];
+        var crabs = [];
+        var bullets = [];
+        var score = {
+            component: new component("40px", "Consolas", "black", 25, 50, "text"),
+            value: 0,
+            printScore: function () {
+                this.component.text = "SCORE: " + this.value;
+                this.component.update();
+            },
+            addScore: function (score) {
+                this.value += score;
+            }
+        }
+        var background = {
+            component: new component(1200, 900, "background.png", 0, 0, "image"),
+            printBackground: function() {
+                this.component.update();
+            }
+        }
+
+        function startGame() {
+            gameArea.start();
+        }
+
+        var gameArea = {
+            canvas: document.createElement("canvas"),
+            isRunning: false,
+            start: function () {
+                if (this.isRunning) return;
+                turtles = [];
+                crabs = [];
+                bullets = [];
+                score.value = 0;
+                player.component = new component(40, 70, "playernobackground.png", 600, 800, "image");
+                player.lastShotAt = 0;
+                this.isRunning = true;
+                this.canvas.width = 1200;
+                this.canvas.height = 900;
+                this.context = this.canvas.getContext("2d");
+                this.canvas.onclick = () => this.start();
+                document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+                this.interval = setInterval(updateGameArea, 20);
+                this.frameNo = 0;
+                window.addEventListener('keydown', function (e) {
+                    gameArea.keys = (gameArea.keys || []);
+                    gameArea.keys[e.keyCode] = true;
+                })
+                window.addEventListener('keyup', function (e) {
+                    gameArea.keys[e.keyCode] = false;
+                })
+            },
+            clear: function () {
+                this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            },
+            stop: function () {
+                clearInterval(this.interval);
+            },
+            gameOver: function () {
+                this.isRunning = false;
+                this.stop();
+                this.clear();
+                var gameOver = new component("80px", "Consolas", "black", 400, 450, "text");
+                var scoreComp = new component("60px", "Consolas", "black", 420, 520, "text");
+                var playAgain = new component("30px", "Consolas", "black", 380, 700, "text");
+                gameOver.text = "GAME OVER";
+                scoreComp.text = "SCORE: " + score.value;
+                playAgain.text = "Click anywhere to play again";
+                gameOver.update();
+                scoreComp.update();
+                playAgain.update();
+            }
+        }
+
+        var player = {
+            component: new component(40, 70, "playernobackground.png", 600, 800, "image"),
+            lastShotAt: 0,
+            move: function () {
+                this.component.speedX = 0;
+                if (gameArea.keys && gameArea.keys[37]) this.component.speedX = -7;
+                if (gameArea.keys && gameArea.keys[39]) this.component.speedX = 7;
+                this.component.newPos();
+                this.component.update();
+            },
+            shoot: function () {
+                if (gameArea.keys && gameArea.keys[32] && ((getCurrentTimestamp() - this.lastShotAt) >= 2)) {
+                    var bullet = new component(30, 30, "waterbulletnobackground.png", this.component.x + 10, this.component.y, "image");
+                    bullets.push(bullet);
+                    this.lastShotAt = getCurrentTimestamp();
+                }
+            },
+            moveBullets: function (bullets) {
+                for (i = 0; i < bullets.length; i += 1) {
+                    bullets[i].speedY = -10;
+                    bullets[i].newPos();
+                    bullets[i].update();
+                }
+            }
+        }
+
+        function getCurrentTimestamp() {
+            return parseInt((new Date()).getTime() / 1000);
+        }
+
+        function component(width, height, color, x, y, type) {
+            this.type = type;
+            if (type == "image") {
+                this.image = new Image();
+                this.image.src = color;
+            }
+            this.width = width;
+            this.height = height;
+            this.x = x;
+            this.y = y;
+            this.speedX = 0;
+            this.speedY = 0;
+            this.update = function () {
+                ctx = gameArea.context;
+                if (this.type == "text") {
+                    ctx.font = this.width + " " + this.height;
+                    ctx.fillStyle = color;
+                    ctx.fillText(this.text, this.x, this.y);
+                } else if (type == "image") {
+                    ctx.drawImage(this.image,
+                        this.x,
+                        this.y,
+                        this.width, this.height);
+                } else {
+                    ctx.fillStyle = color;
+                    ctx.fillRect(this.x, this.y, this.width, this.height);
+                }
+            }
+            this.newPos = function () {
+                this.x += this.speedX;
+                this.y += this.speedY;
+            }
+        }
+
+
+        function everyinterval(n) {
+            if ((gameArea.frameNo / n) % 1 == 0) { return true; }
+            return false;
+        }
+
+        function selectRandomFromList(list) {
+            var randomIndex = Math.floor(Math.random() * list.length);
+            var randomValue = list[randomIndex];
+            return randomValue;
+        }
+
+        function spawnCrab() {
+            var fromRightLayers = [200, 280, 360, 440, 520];
+            var fromLeftLayers = [240, 320, 400, 480, 560];
+            var rightOrLeft = Math.random() < 0.5; // true gelirse right, false gelirse left
+            var layer = rightOrLeft ? selectRandomFromList(fromRightLayers) : selectRandomFromList(fromLeftLayers);
+
+            var crab = {
+                rightOrLeft: rightOrLeft,
+                layer: layer,
+                component: rightOrLeft ? (new component(40, 40, "crabnobackgroundright.png", rightOrLeft ? gameArea.canvas.width : -40, layer, "image")) :
+                                         (new component(40, 40, "crabnobackgroundleft.png", rightOrLeft ? gameArea.canvas.width : -40, layer, "image")),
+
+                move: function () {
+                    if (rightOrLeft)
+                        this.component.x -= 1;
+                    else
+                        this.component.x += 1;
+                    this.component.update();
+                }
+            }
+            crabs.push(crab);
+        }
+
+        function spawnTurtle() {
+            var x = Math.floor(Math.random() * ((960 - 100) / 40 + 1)) * 40 + 100;
+            var c = new component(40, 40, "seaturtlenobackground.png", x, 940, "image");
+
+            var turtle = {
+                x: x,
+                component: c,
+                move: function () {
+                    this.component.y -= 1;
+                    this.component.update();
+                }
+            }
+            turtles.push(turtle);
+        }
+
+        function crabEatsTurtle(crab, turtle) {
+            var crabLeft = crab.x;
+            var crabRight = crab.x + crab.width;
+            var crabTop = crab.y;
+            var crabBottom = crab.y + crab.height;
+            var turtleLeft = turtle.x;
+            var turtleRight = turtle.x + turtle.width;
+            var turtleTop = turtle.y;
+            var turtleBottom = turtle.y + turtle.height;
+            return (((crabLeft == turtleRight) && (crabBottom >= turtleTop) && (crabTop <= turtleBottom)) ||
+                ((crabRight == turtleLeft) && (crabBottom >= turtleTop) && (crabTop <= turtleBottom)) ||
+                ((crabBottom == turtleTop) && (crabRight >= turtleLeft) && (crabLeft <= turtleRight)) ||
+                ((crabBottom == turtleTop) && (crabLeft <= turtleRight) && (crabRight >= turtleLeft)))
+        }
+
+        function bulletHitsCrab(bullet, crab) {
+            var bulletLeft = bullet.x;
+            var bulletRight = bullet.x + bullet.width;
+            var bulletTop = bullet.y;
+            var bulletBottom = bullet.y + bullet.height;
+            var crabLeft = crab.x;
+            var crabRight = crab.x + crab.width;
+            var crabTop = crab.y;
+            var crabBottom = crab.y + crab.height;
+            return (((bulletTop == crabBottom) && (bulletLeft >= crabLeft) && (bulletRight <= crabRight)) ||
+                ((bulletTop == crabBottom) && (bulletLeft <= crabRight) && (bulletRight >= crabLeft)) ||
+                ((bulletTop == crabBottom) && (bulletLeft <= crabRight) && (bulletRight >= crabLeft)));
+        }
+
+        function updateGameArea() {
+            if (!gameArea.isRunning) return;
+            gameArea.clear();
+            background.printBackground();
+            gameArea.frameNo += 1;
+
+            if (gameArea.frameNo == 1 || everyinterval(130)) {
+                spawnCrab();
+                spawnTurtle();
+            }
+
+            for (i = 0; i < crabs.length; i += 1) {
+                crabs[i].move();
+            }
+
+            for (i = 0; i < turtles.length; i += 1) {
+                turtles[i].move();
+            }
+
+            for (i = 0; i < crabs.length; i++) {
+                for (j = 0; j < turtles.length; j++) {
+                    if (crabEatsTurtle(crabs[i].component, turtles[j].component)) {
+                        // Remove the turtle from the screen
+                        turtles.splice(j, 1);
+                        j--;
+                        gameArea.gameOver();
+                        return;
+                    }
+                }
+            }
+
+            player.move();
+            player.shoot();
+            player.moveBullets(bullets);
+            score.printScore();
+
+            for (i = 0; i < bullets.length; i++) {
+                for (j = 0; j < crabs.length; j++) {
+                    if (bulletHitsCrab(bullets[i], crabs[j].component)) {
+                        // Remove the turtle from the screen
+                        crabs.splice(j, 1);
+                        bullets.splice(i, 1);
+                        j--;
+                        i--;
+                        score.addScore(100);
+                    }
+                }
+            }
+        }
+
+    </script>
+</body>
+
+</html>
