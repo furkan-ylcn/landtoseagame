@@ -22,3 +22,7 @@
   Oyun sonu ekranında oyuncu "GAME OVER" ekranı ile karşılaşmaktadır bu ekranda oyuncunun o turda yaptığı puan ve oyunu tekrardan başlatmak için ne yapması gerektiği yazmaktadır. Oyuncu oyunu yeniden başlatmak için oyun alanı içerisinde herhangi bir yere tıklamalıdır.
 
 ![image](https://github.com/furkan-ylcn/landtoseagame/assets/133211800/2c86df9a-c396-4838-b565-e8b3e9a077b5)
+
+# Video Tanıtım Linki
+  Oyun tanıtım videosu:
+  https://youtu.be/duhGnhTXLRM
