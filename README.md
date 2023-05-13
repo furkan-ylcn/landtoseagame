@@ -10,6 +10,8 @@
  # Oyun Alanı
   Oyun alanı 1200x900 pixel'dir. Oyun alanında oyuncu, sağdan ve soldan rastgele olarak spawn olan yengeçler ve ekranın altından rastgele olarak spawn olan su kaplumbağaları bulunmaktadır. Aynı zamanda oyun alanının sol üst kısmında oyuncunun anlık olarak puanını görebilmesi için "SCORE" sayacı bulunmaktadır.
   
+  ![image](https://github.com/furkan-ylcn/landtoseagame/assets/133211800/4852087b-c5c0-4a09-841b-bf951be5cfd2)
+
  # Puanlama Sistemi
   Oyunda sadece tek bir durumda puan kazanılmaktadır o da yengeçlerin vurulması durumudur. Her vurulan yengeç için oyuncu 100 puan kazanmaktadır.
   
@@ -18,3 +20,5 @@
   
  # Oyun Sonu Ekranı
   Oyun sonu ekranında oyuncu "GAME OVER" ekranı ile karşılaşmaktadır bu ekranda oyuncunun o turda yaptığı puan ve oyunu tekrardan başlatmak için ne yapması gerektiği yazmaktadır. Oyuncu oyunu yeniden başlatmak için oyun alanı içerisinde herhangi bir yere tıklamalıdır.
+
+![image](https://github.com/furkan-ylcn/landtoseagame/assets/133211800/2c86df9a-c396-4838-b565-e8b3e9a077b5)
